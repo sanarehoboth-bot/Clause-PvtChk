@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clause — Step-by-Step Privacy Lockdown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0d0a;
+    --panel:#10140f;
+    --paper:#e4ede0;
+    --laser:#39ff6e;
+    --laser-dim:rgba(57,255,110,0.25);
+    --line:rgba(228,237,224,0.12);
+    --muted:rgba(228,237,224,0.6);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--paper);
+    font-family:'Work Sans', sans-serif;
+    line-height:1.5;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+
+  header{
+    padding:56px 24px 40px;
+    max-width:860px;
+    margin:0 auto;
+    text-align:center;
+  }
+  .brand{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.25em;
+    color:var(--laser);
+    text-shadow:0 0 12px var(--laser-dim);
+    text-transform:uppercase;
+  }
+  h1{
+    margin-top:16px;
+    font-size:clamp(28px,6vw,44px);
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    margin-top:14px;
+    color:var(--muted);
+    font-size:15.5px;
+    max-width:520px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+
+  main{max-width:860px; margin:0 auto; padding:0 24px 90px;}
+
+  /* GOOGLE WALKTHROUGH — laser rail */
+  .rail-section{margin-top:48px;}
+  .rail-title{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:8px;
+  }
+  .rail-title h2{
+    font-size:24px;
+    font-weight:700;
+  }
+  .rail-title .badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    color:var(--laser);
+    border:1px solid var(--laser);
+    padding:3px 8px;
+    border-radius:20px;
+    text-shadow:0 0 6px var(--laser-dim);
+  }
+  .rail-note{color:var(--muted); font-size:14px; margin-bottom:32px;}
+
+  .rail{
+    position:relative;
+    padding-left:38px;
+  }
+  .rail::before{
+    content:"";
+    position:absolute;
+    left:11px;
+    top:6px;
+    bottom:6px;
+    width:2px;
+    background:linear-gradient(180deg, transparent, var(--laser-dim) 10%, var(--laser-dim) 90%, transparent);
+  }
+  .laser-dot{
+    position:absolute;
+    left:5px;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:var(--laser);
+    box-shadow:0 0 8px 2px var(--laser), 0 0 20px 6px var(--laser-dim);
+    animation:travel 7s linear infinite;
+  }
+  @keyframes travel{
+    0%{top:0%;}
+    100%{top:100%;}
+  }
+
+  .step{
+    position:relative;
+    padding-bottom:34px;
+  }
+  .step:last-child{padding-bottom:0;}
+  .step::before{
+    content:"";
+    position:absolute;
+    left:-32px;
+    top:2px;
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:var(--panel);
+    border:2px solid var(--laser);
+  }
+  .step-num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--laser);
+    letter-spacing:0.1em;
+    text-shadow:0 0 6px var(--laser-dim);
+  }
+  .step-title{
+    font-size:17px;
+    font-weight:600;
+    margin-top:4px;
+  }
+  .path{
+    margin-top:8px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--laser);
+    background:rgba(57,255,110,0.06);
+    border:1px solid rgba(57,255,110,0.25);
+    padding:8px 12px;
+    border-radius:5px;
+    display:inline-block;
+    text-decoration:none;
+  }
+  .path:hover{background:rgba(57,255,110,0.14);}
+  .step-desc{
+    margin-top:8px;
+    font-size:14.5px;
+    color:var(--muted);
+    max-width:560px;
+  }
+  .step-desc a{color:var(--laser); text-decoration:underline;}
+
+  /* MISSED SETTINGS GRID */
+  .missed-section{margin-top:64px;}
+  .missed-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  @media(max-width:640px){.missed-grid{grid-template-columns:1fr;}}
+  .missed-card{
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:18px;
+    background:rgba(255,255,255,0.02);
+  }
+  .missed-card h4{
+    font-size:15px;
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  .missed-card p{
+    font-size:13.5px;
+    color:var(--muted);
+    margin-bottom:10px;
+  }
+  .missed-card .links{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .missed-card .links a{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--laser);
+    text-decoration:none;
+    border:1px solid rgba(57,255,110,0.3);
+    padding:4px 9px;
+    border-radius:20px;
+  }
+  .missed-card .links a:hover{background:rgba(57,255,110,0.1);}
+
+  /* CHECKLIST TABLE */
+  .checklist-section{margin-top:64px;}
+  .section-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    color:var(--laser);
+    text-shadow:0 0 6px var(--laser-dim);
+    margin-bottom:16px;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+  }
+  th, td{
+    padding:12px 10px;
+    text-align:left;
+    border-bottom:1px solid var(--line);
+  }
+  th{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:500;
+  }
+  td.platform{font-weight:600;}
+  td.symbol{text-align:center; font-size:16px;}
+  tr:hover{background:rgba(57,255,110,0.04);}
+
+  .legend{
+    margin-top:14px;
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+    font-size:12.5px;
+    color:var(--muted);
+  }
+
+  /* DONE TRACKER */
+  .tracker{
+    margin-top:64px;
+    border:1px solid rgba(57,255,110,0.25);
+    border-radius:8px;
+    padding:24px;
+    background:rgba(57,255,110,0.03);
+  }
+  .tracker .section-label{margin-bottom:18px;}
+  .track-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14.5px;
+  }
+  .track-item:last-child{border-bottom:none;}
+  .track-item input{
+    width:18px; height:18px;
+    accent-color:var(--laser);
+    cursor:pointer;
+  }
+  .track-item label{cursor:pointer;}
+  .track-item input:checked ~ label{
+    color:var(--muted);
+    text-decoration:line-through;
+  }
+
+  footer{
+    max-width:860px;
+    margin:60px auto 0;
+    padding:24px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--muted);
+    border-top:1px solid var(--line);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Clause</div>
+  <h1>Turn off tracking. Not in theory — click by click.</h1>
+  <p class="sub">Google is the messiest, so it leads with the full walkthrough — now including WhatsApp promo/spam blocking and Gmail subscription cleanup, plus every setting most guides skip.</p>
+</header>
+
+<main>
+
+  <section class="rail-section">
+    <div class="rail-title">
+      <h2>Google</h2>
+      <span class="badge">MOST COMPLEX</span>
+    </div>
+    <p class="rail-note">Follow the glowing line top to bottom. Every step is one tap in your Google Account.</p>
+
+    <div class="rail">
+      <div class="laser-dot"></div>
+
+      <div class="step">
+        <div class="step-num">STEP 01</div>
+        <div class="step-title">Open your privacy dashboard</div>
+        <a class="path" href="https://myaccount.google.com/data-and-privacy" target="_blank" rel="noopener">myaccount.google.com → Data &amp; Privacy ↗</a>
+        <p class="step-desc">This one screen controls almost everything below. Everything happens from here.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">STEP 02</div>
+        <div class="step-title">Stop search &amp; app tracking</div>
+        <a class="path" href="https://myactivity.google.com/activitycontrols/webandapp" target="_blank" rel="noopener">Web &amp; App Activity ↗</a>
+        <p class="step-desc">Toggle it off, or tap "Auto-delete" and set it to 3 months so old history clears itself.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">STEP 03</div>
+        <div class="step-title">Erase existing search history</div>
+        <a class="path" href="https://myactivity.google.com/myactivity" target="_blank" rel="noopener">My Activity → Delete → All time ↗</a>
+        <p class="step-desc">This wipes what Google already logged, not just what happens going forward.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">STEP 04</div>
+        <div class="step-title">Turn off location tracking</div>
+        <a class="path" href="https://myactivity.google.com/activitycontrols/location" target="_blank" rel="noopener">Location History (Timeline) ↗</a>
+        <p class="step-desc">Turn off, or set auto-delete to 3 months. This is the log of everywhere your phone has been.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">STEP 05</div>
+        <div class="step-title">Clear YouTube activity</div>
+        <a class="path" href="https://myactivity.google.com/activitycontrols/youtube" target="_blank" rel="noopener">YouTube History ↗</a>
+        <p class="step-desc">Pause watch &amp; search history, then set auto-delete to 3 months.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">STEP 06</div>
+        <div class="step-title">Turn off ad personalization</div>
+        <a class="path" href="https://myaccount.google.com/adssettings" target="_blank" rel="noopener">Ad Settings → Ad Personalization ↗</a>
+        <p class="step-desc">Stops Google from building an interest profile out of your activity to target ads.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">STEP 07</div>
+        <div class="step-title">Review connected apps</div>
+        <a class="path" href="https://myaccount.google.com/connections" target="_blank" rel="noopener">Third-party Apps with Account Access ↗</a>
+        <p class="step-desc">Remove anything you don't recognize or no longer use — each one is a door into your account.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">STEP 08</div>
+        <div class="step-title">Turn on 2-Step Verification</div>
+        <a class="path" href="https://myaccount.google.com/signinoptions/two-step-verification" target="_blank" rel="noopener">Security → 2-Step Verification ↗</a>
+        <p class="step-desc">Single biggest lock you can add. Stops account access even if your password leaks.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">STEP 09</div>
+        <div class="step-title">Check who's logged into your account</div>
+        <a class="path" href="https://myaccount.google.com/device-activity" target="_blank" rel="noopener">Device Activity ↗</a>
+        <p class="step-desc">Shows every device currently signed in. Sign out anything you don't recognize.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">STEP 10</div>
+        <div class="step-title">Remove yourself from Google Search results</div>
+        <a class="path" href="https://myactivity.google.com/results-about-you" target="_blank" rel="noopener">Results About You ↗</a>
+        <p class="step-desc">Ask Google to remove your phone number, address, or personal info surfacing in search — and get notified if new info about you appears.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="rail-section">
+    <div class="rail-title">
+      <h2>WhatsApp</h2>
+      <span class="badge">SPAM &amp; PROMO</span>
+    </div>
+    <p class="rail-note">Every promotional / business message you didn't ask for goes through these three doors.</p>
+
+    <div class="rail">
+      <div class="laser-dot"></div>
+
+      <div class="step">
+        <div class="step-num">STEP 01</div>
+        <div class="step-title">Block message floods from unknown numbers</div>
+        <a class="path" href="https://faq.whatsapp.com/3379690015658337/?cms_platform=web&amp;lang=en" target="_blank" rel="noopener">Settings → Privacy → Advanced → Block Unknown Account Messages ↗</a>
+        <p class="step-desc">Auto-blocks unknown numbers that send a high volume of messages in a short time — the exact pattern promo/spam accounts use.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">STEP 02</div>
+        <div class="step-title">Opt out of a specific business</div>
+        <a class="path" href="https://faq.whatsapp.com/2470686849751285/?cms_platform=android" target="_blank" rel="noopener">Open the business chat → Block/Report ↗</a>
+        <p class="step-desc">Verified business chats have a built-in "stop promotional messages" option — no need to block the whole contact if you still want order updates.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">STEP 03</div>
+        <div class="step-title">Silence unknown callers</div>
+        <a class="path" href="https://www.whatsapp.com/security" target="_blank" rel="noopener">Settings → Privacy → Calls ↗</a>
+        <p class="step-desc">Stops spam/scam calls from ringing your phone entirely — they land silently in a call log instead.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="rail-section">
+    <div class="rail-title">
+      <h2>Gmail</h2>
+      <span class="badge">SUBSCRIPTIONS &amp; PROMO</span>
+    </div>
+    <p class="rail-note">The goal: only mail you're actually waiting for hits your main inbox.</p>
+
+    <div class="rail">
+      <div class="laser-dot"></div>
+
+      <div class="step">
+        <div class="step-num">STEP 01</div>
+        <div class="step-title">Turn on the Promotions tab</div>
+        <a class="path" href="https://mail.google.com/mail/u/0/#settings/inbox" target="_blank" rel="noopener">Settings → Inbox → Categories ↗</a>
+        <p class="step-desc">Every marketing/subscription email routes to its own tab automatically, away from real mail — no filters needed.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">STEP 02</div>
+        <div class="step-title">Unsubscribe in bulk</div>
+        <a class="path" href="https://mail.google.com/mail/u/0/#settings/filters" target="_blank" rel="noopener">Filters &amp; Blocked Addresses ↗</a>
+        <p class="step-desc">Gmail shows an "Unsubscribe" link next to the sender on most promo mail now — one tap kills it at the source instead of just hiding it.</p>
+      </div>
+
+      <div class="step">
+        <div class="step-num">STEP 03</div>
+        <div class="step-title">Auto-delete repeat senders</div>
+        <a class="path" href="https://mail.google.com/mail/u/0/#settings/filters" target="_blank" rel="noopener">Create Filter → Delete It ↗</a>
+        <p class="step-desc">For senders that ignore unsubscribe requests, a filter rule sends every future email from them straight to Trash on arrival.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="missed-section">
+    <div class="section-label">Also worth locking down</div>
+    <div class="missed-grid">
+      <div class="missed-card">
+        <h4>2-Factor Authentication</h4>
+        <p>Adds a second lock beyond your password — the single biggest thing most people skip.</p>
+        <div class="links">
+          <a href="https://help.instagram.com/566810106808145" target="_blank" rel="noopener">Instagram ↗</a>
+          <a href="https://www.linkedin.com/psettings/two-step-verification" target="_blank" rel="noopener">LinkedIn ↗</a>
+          <a href="https://x.com/settings/account/login_verification" target="_blank" rel="noopener">Twitter/X ↗</a>
+        </div>
+      </div>
+      <div class="missed-card">
+        <h4>Who can tag or mention you</h4>
+        <p>Stops strangers from pulling your name into posts, photos, or replies you never agreed to.</p>
+        <div class="links">
+          <a href="https://www.instagram.com/accounts/manage_tags/" target="_blank" rel="noopener">Instagram ↗</a>
+          <a href="https://x.com/settings/audience_and_tagging" target="_blank" rel="noopener">Twitter/X ↗</a>
+        </div>
+      </div>
+      <div class="missed-card">
+        <h4>Profile visibility off the platform</h4>
+        <p>Controls whether your profile shows up in Google search results, not just within the app itself.</p>
+        <div class="links">
+          <a href="https://www.linkedin.com/psettings/public-profile" target="_blank" rel="noopener">LinkedIn ↗</a>
+          <a href="https://myactivity.google.com/results-about-you" target="_blank" rel="noopener">Google ↗</a>
+        </div>
+      </div>
+      <div class="missed-card">
+        <h4>Download or delete your full data</h4>
+        <p>See the entire file a platform holds on you, or request it wiped outright.</p>
+        <div class="links">
+          <a href="https://takeout.google.com" target="_blank" rel="noopener">Google Takeout ↗</a>
+          <a href="https://www.instagram.com/download/request/" target="_blank" rel="noopener">Instagram ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="checklist-section">
+    <div class="section-label">Everything else, one table</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th class="symbol">Name</th>
+          <th class="symbol">Email</th>
+          <th class="symbol">Phone</th>
+          <th class="symbol">DOB</th>
+          <th class="symbol">Pics</th>
+          <th>Where to fix it</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="platform">Gmail</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">✅</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">➖</td>
+          <td><a class="path" href="https://myaccount.google.com/signinoptions/two-step-verification" target="_blank" rel="noopener">Turn on 2FA ↗</a></td>
+        </tr>
+        <tr>
+          <td class="platform">WhatsApp</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">✅</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">✅</td>
+          <td><a class="path" href="https://faq.whatsapp.com/3379690015658337/?cms_platform=web&amp;lang=en" target="_blank" rel="noopener">Privacy → Advanced ↗</a></td>
+        </tr>
+        <tr>
+          <td class="platform">Instagram</td>
+          <td class="symbol">✅</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">✅</td>
+          <td><a class="path" href="https://www.instagram.com/accounts/privacy_and_security/" target="_blank" rel="noopener">Switch to Private ↗</a></td>
+        </tr>
+        <tr>
+          <td class="platform">YouTube</td>
+          <td class="symbol">✅</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">✅</td>
+          <td><a class="path" href="https://myactivity.google.com/activitycontrols/youtube" target="_blank" rel="noopener">Channel settings ↗</a></td>
+        </tr>
+        <tr>
+          <td class="platform">LinkedIn</td>
+          <td class="symbol">✅</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">✅</td>
+          <td><a class="path" href="https://www.linkedin.com/psettings/visibility" target="_blank" rel="noopener">Visibility settings ↗</a></td>
+        </tr>
+        <tr>
+          <td class="platform">Twitter / X</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">➖</td>
+          <td class="symbol">✅</td>
+          <td><a class="path" href="https://x.com/settings/privacy_and_safety" target="_blank" rel="noopener">Set Protected ↗</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="legend">
+      <span>✅ visible to public</span>
+      <span>➖ hidden by default</span>
+      <span class="mono">Fix column = exact setting path</span>
+    </div>
+  </section>
+
+  <section class="tracker">
+    <div class="section-label">Mark off as you go</div>
+    <div class="track-item">
+      <input type="checkbox" id="c1"><label for="c1">Google — Web &amp; App Activity turned off / auto-delete set</label>
+    </div>
+    <div class="track-item">
+      <input type="checkbox" id="c2"><label for="c2">Google — Location History off / cleared</label>
+    </div>
+    <div class="track-item">
+      <input type="checkbox" id="c3"><label for="c3">Google — Ad personalization off</label>
+    </div>
+    <div class="track-item">
+      <input type="checkbox" id="c7"><label for="c7">Google — 2-Step Verification turned on</label>
+    </div>
+    <div class="track-item">
+      <input type="checkbox" id="c8"><label for="c8">Google — Device Activity reviewed, unknown sessions signed out</label>
+    </div>
+    <div class="track-item">
+      <input type="checkbox" id="c4"><label for="c4">WhatsApp — Block Unknown Account Messages turned on</label>
+    </div>
+    <div class="track-item">
+      <input type="checkbox" id="c9"><label for="c9">WhatsApp — Silence Unknown Callers turned on</label>
+    </div>
+    <div class="track-item">
+      <input type="checkbox" id="c10"><label for="c10">Gmail — Promotions tab enabled, top senders unsubscribed</label>
+    </div>
+    <div class="track-item">
+      <input type="checkbox" id="c5"><label for="c5">Instagram — Private + bio cleared of contact info</label>
+    </div>
+    <div class="track-item">
+      <input type="checkbox" id="c6"><label for="c6">LinkedIn — email/phone hidden from public</label>
+    </div>
+    <div class="track-item">
+      <input type="checkbox" id="c11"><label for="c11">2FA turned on for Instagram, LinkedIn, and Twitter/X</label>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  CLAUSE · READ ONCE, PROTECTED FOR GOOD · NO SIGN-UP, NO TRACKING ON THIS PAGE ITSELF
+</footer>
+
+</body>
+</html>

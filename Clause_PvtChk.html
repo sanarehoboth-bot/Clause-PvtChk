@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clause_PvtChk — Privacy Mission Briefing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05070a;
+    --panel:#0d1210;
+    --card:#0f1614;
+    --laser:#39ff6e;
+    --laser-dim:rgba(57,255,110,0.22);
+    --paper:#e4ede0;
+    --muted:rgba(228,237,224,0.55);
+    --line:rgba(57,255,110,0.18);
+    --red:#ff4d4d;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(57,255,110,0.06), transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(57,255,110,0.04), transparent 50%),
+      var(--bg);
+    color:var(--paper);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:repeating-linear-gradient(0deg, rgba(57,255,110,0.015) 0px, transparent 1px, transparent 2px);
+    pointer-events:none;
+    z-index:1;
+  }
+
+  .hero{
+    min-height:92vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:32px 20px;
+    position:relative;
+  }
+  .stamp{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.3em;
+    color:var(--red);
+    border:1px solid var(--red);
+    padding:5px 14px;
+    border-radius:2px;
+    text-transform:uppercase;
+    margin-bottom:28px;
+    opacity:0.85;
+    animation:flicker 3s infinite;
+  }
+  @keyframes flicker{
+    0%,94%,100%{opacity:0.85;}
+    95%{opacity:0.3;}
+  }
+  .codename{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.35em;
+    color:var(--laser);
+    text-shadow:0 0 14px var(--laser-dim);
+    margin-bottom:18px;
+  }
+  h1{
+    font-size:clamp(32px,7.5vw,64px);
+    font-weight:700;
+    letter-spacing:-0.01em;
+    line-height:1.08;
+    max-width:760px;
+  }
+  .type-line{
+    margin-top:22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:15px;
+    color:var(--muted);
+    max-width:520px;
+    border-right:2px solid var(--laser);
+    white-space:nowrap;
+    overflow:hidden;
+    animation:typing 3.2s steps(48,end), blink-caret 0.75s step-end infinite;
+  }
+  @keyframes typing{from{width:0;} to{width:100%;}}
+  @keyframes blink-caret{50%{border-color:transparent;}}
+
+  .scroll-cue{
+    margin-top:56px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.15em;
+    color:var(--laser);
+    text-transform:uppercase;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    animation:bob 2s ease-in-out infinite;
+  }
+  @keyframes bob{0%,100%{transform:translateY(0);} 50%{transform:translateY(8px);}}
+
+  .briefing-label{
+    text-align:center;
+    padding:0 20px;
+    max-width:900px;
+    margin:0 auto 36px;
+  }
+  .briefing-label .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.2em;
+    color:var(--laser);
+    text-transform:uppercase;
+  }
+  .briefing-label h2{
+    font-size:clamp(24px,4vw,34px);
+    margin-top:10px;
+    font-weight:700;
+  }
+  .briefing-label p{
+    margin-top:10px;
+    color:var(--muted);
+    font-size:14.5px;
+  }
+
+  .grid{
+    max-width:1080px;
+    margin:0 auto;
+    padding:0 20px 90px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+    gap:20px;
+    position:relative;
+    z-index:2;
+  }
+
+  .flip-card{
+    perspective:1400px;
+    height:340px;
+    cursor:pointer;
+  }
+  .flip-inner{
+    position:relative;
+    width:100%; height:100%;
+    transition:transform 0.7s cubic-bezier(.4,.2,.2,1);
+    transform-style:preserve-3d;
+  }
+  .flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+
+  .face{
+    position:absolute; inset:0;
+    backface-visibility:hidden;
+    border-radius:10px;
+    border:1px solid var(--line);
+    padding:22px;
+    display:flex;
+    flex-direction:column;
+  }
+  .face-front{
+    background:linear-gradient(155deg, var(--card), var(--panel));
+    justify-content:space-between;
+  }
+  .face-front .mono-tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.15em;
+    color:var(--laser);
+    text-transform:uppercase;
+    border:1px solid rgba(57,255,110,0.3);
+    padding:3px 9px;
+    border-radius:20px;
+    align-self:flex-start;
+  }
+  .platform-name{
+    font-size:26px;
+    font-weight:700;
+    margin-top:auto;
+  }
+  .risk-line{
+    font-size:13px;
+    color:var(--muted);
+    margin-top:8px;
+  }
+  .tap-tip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:rgba(57,255,110,0.6);
+    margin-top:14px;
+    letter-spacing:0.05em;
+  }
+
+  .face-back{
+    background:var(--panel);
+    transform:rotateY(180deg);
+    overflow-y:auto;
+  }
+  .face-back h4{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    color:var(--laser);
+    text-transform:uppercase;
+    margin-bottom:12px;
+  }
+  .back-step{
+    font-size:13px;
+    padding:8px 0;
+    border-bottom:1px solid rgba(57,255,110,0.1);
+  }
+  .back-step:last-child{border-bottom:none;}
+  .back-step .num{
+    color:var(--laser);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    margin-right:6px;
+  }
+  .back-step a{
+    color:var(--laser);
+    text-decoration:underline;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    display:inline-block;
+    margin-top:3px;
+    position:relative;
+    z-index:5;
+    pointer-events:auto;
+    padding:4px 2px;
+  }
+  .back-step p{color:var(--muted); margin-top:3px; font-size:12.5px;}
+  .close-back{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    text-align:right;
+    padding:4px 0 10px;
+    cursor:pointer;
+  }
+
+  .accordion-section{
+    max-width:900px;
+    margin:0 auto;
+    padding:0 20px 60px;
+    position:relative;
+    z-index:2;
+  }
+  .acc-item{
+    border:1px solid var(--line);
+    border-radius:8px;
+    margin-bottom:12px;
+    overflow:hidden;
+    background:rgba(255,255,255,0.015);
+  }
+  .acc-head{
+    padding:18px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+    font-weight:600;
+    font-size:15.5px;
+  }
+  .acc-head .chevron{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--laser);
+    transition:transform 0.3s ease;
+  }
+  .acc-item.open .chevron{transform:rotate(180deg);}
+  .acc-body{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 0.4s ease;
+    padding:0 20px;
+  }
+  .acc-item.open .acc-body{
+    max-height:900px;
+    padding-bottom:20px;
+  }
+  .acc-body p{color:var(--muted); font-size:13.5px; margin-bottom:8px;}
+  .acc-body .links{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px;}
+  .acc-body .links a{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--laser);
+    text-decoration:none;
+    border:1px solid rgba(57,255,110,0.3);
+    padding:4px 10px;
+    border-radius:20px;
+  }
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th, td{padding:9px 6px; text-align:left; border-bottom:1px solid var(--line);}
+  th{font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em;}
+  td.symbol{text-align:center;}
+  td a{color:var(--laser); font-family:'IBM Plex Mono', monospace; font-size:11px; text-decoration:underline;}
+
+  footer{
+    max-width:900px;
+    margin:0 auto;
+    padding:30px 20px 60px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+    text-align:center;
+    border-top:1px solid var(--line);
+    position:relative;
+    z-index:2;
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="stamp">Classified — Personal Use</div>
+  <div class="codename">CLAUSE_PVTCHK // AGENT BRIEFING</div>
+  <h1>Your data has a<br>file. Go read it.</h1>
+  <p class="type-line">7 platforms. 30+ leaks. Zero reading required.</p>
+  <div class="scroll-cue">
+    <span>Tap a card to open the file</span>
+    <span>↓</span>
+  </div>
+</section>
+
+<div class="briefing-label">
+  <div class="tag">Mission Grid</div>
+  <h2>Pick a target. Flip the card. Follow the steps.</h2>
+  <p>Every step links straight to the real setting — no searching required.</p>
+</div>
+
+<div class="grid" id="cardGrid"></div>
+
+<div class="accordion-section" id="accordionSection"></div>
+
+<footer>
+  CLAUSE_PVTCHK · READ ONCE, PROTECTED FOR GOOD · NO SIGN-UP, NO TRACKING ON THIS PAGE ITSELF
+</footer>
+
+<script>
+const platforms = [
+  {
+    name: "Google",
+    tag: "MOST COMPLEX",
+    risk: "Search, location, YouTube, and ad tracking — all in one account.",
+    steps: [
+      {t:"Open privacy dashboard", l:"https://myaccount.google.com/data-and-privacy", d:"Everything below runs from here."},
+      {t:"Stop search & app tracking", l:"https://myactivity.google.com/activitycontrols/webandapp", d:"Turn off or set auto-delete to 3 months."},
+      {t:"Erase existing history", l:"https://myactivity.google.com/myactivity", d:"Delete → All time wipes what's already logged."},
+      {t:"Turn off location tracking", l:"https://myactivity.google.com/activitycontrols/location", d:"This is the log of everywhere your phone's been."},
+      {t:"Clear YouTube activity", l:"https://myactivity.google.com/activitycontrols/youtube", d:"Pause watch & search history."},
+      {t:"Turn off ad personalization", l:"https://myaccount.google.com/adssettings", d:"Stops interest-profile building for ads."},
+      {t:"Review connected apps", l:"https://myaccount.google.com/connections", d:"Remove anything you don't recognize."},
+      {t:"Turn on 2-Step Verification", l:"https://myaccount.google.com/signinoptions/two-step-verification", d:"The single biggest lock you can add."},
+      {t:"Check active sessions", l:"https://myaccount.google.com/device-activity", d:"Sign out devices you don't recognize."},
+      {t:"Remove yourself from Search", l:"https://myactivity.google.com/results-about-you", d:"Ask Google to remove your info from results."}
+    ]
+  },
+  {
+    name: "WhatsApp",
+    tag: "SPAM & PROMO",
+    risk: "Business blasts and unknown numbers flooding your chats.",
+    steps: [
+      {t:"Block unknown message floods", l:"https://faq.whatsapp.com/3379690015658337/?cms_platform=web&lang=en", d:"Auto-blocks numbers sending high volumes fast."},
+      {t:"Opt out of a business chat", l:"https://faq.whatsapp.com/2470686849751285/?cms_platform=android", d:"Stop promos without blocking the whole contact."},
+      {t:"Silence unknown callers", l:"https://www.whatsapp.com/security", d:"Spam calls land silently in the log instead of ringing."}
+    ]
+  },
+  {
+    name: "Gmail",
+    tag: "SUBSCRIPTIONS",
+    risk: "Only mail you're actually waiting for should hit your inbox.",
+    steps: [
+      {t:"Turn on Promotions tab", l:"https://mail.google.com/mail/u/0/#settings/inbox", d:"Routes marketing mail away automatically."},
+      {t:"Unsubscribe in bulk", l:"https://mail.google.com/mail/u/0/#settings/filters", d:"One tap kills it at the source."},
+      {t:"Auto-delete repeat senders", l:"https://mail.google.com/mail/u/0/#settings/filters", d:"Filter rule sends future mail straight to Trash."}
+    ]
+  },
+  {
+    name: "Instagram",
+    tag: "PUBLIC BY DEFAULT",
+    risk: "Photos, tags, and bio links are visible to anyone by default.",
+    steps: [
+      {t:"Switch to Private", l:"https://www.instagram.com/accounts/privacy_and_security/", d:"Non-followers lose access to posts & stories."},
+      {t:"Control who can tag you", l:"https://www.instagram.com/accounts/manage_tags/", d:"Stops strangers pulling you into posts."},
+      {t:"Turn on 2FA", l:"https://help.instagram.com/566810106808145", d:"Second lock beyond your password."},
+      {t:"Download or delete your data", l:"https://www.instagram.com/download/request/", d:"See the full file the platform holds on you."}
+    ]
+  },
+  {
+    name: "LinkedIn",
+    tag: "CAREER EXPOSURE",
+    risk: "Full work history and network mapped publicly by default.",
+    steps: [
+      {t:"Hide email & phone from public", l:"https://www.linkedin.com/psettings/visibility", d:"Only first-degree connections should see these."},
+      {t:"Turn off public profile visibility", l:"https://www.linkedin.com/psettings/public-profile", d:"Stops your profile showing up in Google search."},
+      {t:"Turn on 2FA", l:"https://www.linkedin.com/psettings/two-step-verification", d:"Second lock beyond your password."}
+    ]
+  },
+  {
+    name: "Twitter / X",
+    tag: "OPEN BY DEFAULT",
+    risk: "Public posts, tags, and mentions unless locked down.",
+    steps: [
+      {t:"Set account to Protected", l:"https://x.com/settings/privacy_and_safety", d:"Only approved followers see your posts."},
+      {t:"Control tagging & mentions", l:"https://x.com/settings/audience_and_tagging", d:"Restrict who can tag or mention you."},
+      {t:"Turn on 2FA", l:"https://x.com/settings/account/login_verification", d:"Second lock beyond your password."}
+    ]
+  },
+  {
+    name: "YouTube",
+    tag: "WATCH HISTORY",
+    risk: "Viewing history quietly reveals more than most posts do.",
+    steps: [
+      {t:"Pause watch & search history", l:"https://myactivity.google.com/activitycontrols/youtube", d:"Set auto-delete to 3 months."},
+      {t:"Use a channel name ≠ real name", l:"https://myaccount.google.com/data-and-privacy", d:"Keeps your channel from linking straight to you."},
+      {t:"Hide subscriptions list", l:"https://www.youtube.com/account_privacy", d:"Stops others seeing everything you follow."}
+    ]
+  }
+];
+
+const grid = document.getElementById('cardGrid');
+platforms.forEach((p) => {
+  const card = document.createElement('div');
+  card.className = 'flip-card';
+  card.innerHTML = `
+    <div class="flip-inner">
+      <div class="face face-front">
+        <span class="mono-tag">${p.tag}</span>
+        <div>
+          <div class="platform-name">${p.name}</div>
+          <div class="risk-line">${p.risk}</div>
+          <div class="tap-tip">TAP TO OPEN FILE →</div>
+        </div>
+      </div>
+      <div class="face face-back">
+        <div class="close-back">✕ close</div>
+        <h4>${p.name} — Action Steps</h4>
+        ${p.steps.map((s, idx) => `
+          <div class="back-step">
+            <span class="num">${String(idx+1).padStart(2,'0')}</span>${s.t}
+            <p>${s.d}</p>
+            <a href="${s.l}" target="_blank" rel="noopener">Open setting ↗</a>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  // Only the FRONT face opens the card — back-face taps never trigger a flip,
+  // so links never compete with the flip gesture.
+  card.querySelector('.face-front').addEventListener('click', () => card.classList.add('flipped'));
+  card.querySelector('.close-back').addEventListener('click', () => card.classList.remove('flipped'));
+  grid.appendChild(card);
+});
+
+const accordionData = [
+  {
+    title: "Also worth locking down",
+    body: `
+      <p><b>2-Factor Authentication</b> — adds a second lock beyond your password.</p>
+      <div class="links">
+        <a href="https://help.instagram.com/566810106808145" target="_blank">Instagram ↗</a>
+        <a href="https://www.linkedin.com/psettings/two-step-verification" target="_blank">LinkedIn ↗</a>
+        <a href="https://x.com/settings/account/login_verification" target="_blank">Twitter/X ↗</a>
+      </div>
+      <p style="margin-top:14px;"><b>Who can tag or mention you</b> — stops strangers pulling your name into posts you never agreed to.</p>
+      <div class="links">
+        <a href="https://www.instagram.com/accounts/manage_tags/" target="_blank">Instagram ↗</a>
+        <a href="https://x.com/settings/audience_and_tagging" target="_blank">Twitter/X ↗</a>
+      </div>
+      <p style="margin-top:14px;"><b>Profile visibility off-platform</b> — controls whether your profile shows up in Google search itself.</p>
+      <div class="links">
+        <a href="https://www.linkedin.com/psettings/public-profile" target="_blank">LinkedIn ↗</a>
+        <a href="https://myactivity.google.com/results-about-you" target="_blank">Google ↗</a>
+      </div>
+      <p style="margin-top:14px;"><b>Download or delete your full data</b> — see the entire file a platform holds, or wipe it.</p>
+      <div class="links">
+        <a href="https://takeout.google.com" target="_blank">Google Takeout ↗</a>
+        <a href="https://www.instagram.com/download/request/" target="_blank">Instagram ↗</a>
+      </div>
+    `
+  },
+  {
+    title: "Quick reference — what's public by default",
+    body: `
+      <table>
+        <thead><tr><th>Platform</th><th class="symbol">Name</th><th class="symbol">Email</th><th class="symbol">Phone</th><th class="symbol">Pics</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Gmail</td><td class="symbol">➖</td><td class="symbol">✅</td><td class="symbol">➖</td><td class="symbol">➖</td><td><a href="https://myaccount.google.com/signinoptions/two-step-verification" target="_blank">2FA ↗</a></td></tr>
+          <tr><td>WhatsApp</td><td class="symbol">➖</td><td class="symbol">➖</td><td class="symbol">✅</td><td class="symbol">✅</td><td><a href="https://faq.whatsapp.com/3379690015658337/?cms_platform=web&lang=en" target="_blank">Privacy ↗</a></td></tr>
+          <tr><td>Instagram</td><td class="symbol">✅</td><td class="symbol">➖</td><td class="symbol">➖</td><td class="symbol">✅</td><td><a href="https://www.instagram.com/accounts/privacy_and_security/" target="_blank">Private ↗</a></td></tr>
+          <tr><td>LinkedIn</td><td class="symbol">✅</td><td class="symbol">➖</td><td class="symbol">➖</td><td class="symbol">✅</td><td><a href="https://www.linkedin.com/psettings/visibility" target="_blank">Visibility ↗</a></td></tr>
+          <tr><td>Twitter/X</td><td class="symbol">➖</td><td class="symbol">➖</td><td class="symbol">➖</td><td class="symbol">✅</td><td><a href="https://x.com/settings/privacy_and_safety" target="_blank">Protected ↗</a></td></tr>
+        </tbody>
+      </table>
+    `
+  }
+];
+
+const accSection = document.getElementById('accordionSection');
+accordionData.forEach(item => {
+  const div = document.createElement('div');
+  div.className = 'acc-item';
+  div.innerHTML = `
+    <div class="acc-head">
+      <span>${item.title}</span>
+      <span class="chevron">⌄</span>
+    </div>
+    <div class="acc-body">${item.body}</div>
+  `;
+  div.querySelector('.acc-head').addEventListener('click', () => div.classList.toggle('open'));
+  accSection.appendChild(div);
+});
+</script>
+
+</body>
+</html>
